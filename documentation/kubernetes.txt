@@ -1,0 +1,42 @@
+installation in both master and worker node
+
+installing docker
+
+sudo apt update  [ubuntu]
+sudo apt install apt-transport-https ca-certificates curl software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+apt-cache policy docker-ce
+sudo apt install docker-ce            OR      yum install docker -y  [amazon]
+systemctl enable docker                       systemctl enable docker
+systemctl restart docker                      systemctl restart docker
+sudo systemctl status docker                  systemctl status docker
+
+install kubeadm --version taking 1.27 in both master and worker node [amazon] 
+
+cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo  [amazon]                  sudo apt-get update     [ubuntu]
+[kubernetes]                                                                     sudo apt-get install -y apt-transport-https ca-certificates curl
+name=Kubernetes                                                                     
+baseurl=https://pkgs.k8s.io/core:/stable:/v1.27/rpm/                             curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.27/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+enabled=1
+gpgcheck=1                                                                       echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.27/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+gpgkey=https://pkgs.k8s.io/core:/stable:/v1.27/rpm/repodata/repomd.xml.key
+exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni                         sudo apt-get update
+EOF                                                                              sudo apt-get install -y kubelet kubeadm kubectl
+                                                                                 sudo apt-mark hold kubelet kubeadm kubectl
+sudo yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+sudo systemctl enable --now kubelet
+
+then initialise kubeadm only in master node
+
+systemctl enable kubectl
+systemctl restart kubelet
+kubeadm init
+
+then install calico only in master node
+
+curl https://raw.githubusercontent.com/projectcalico/calico/v3.27.2/manifests/calico.yaml -O
+kubectl apply -f calico.yaml
+
+then run 
+kubectl get nodes
